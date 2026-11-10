@@ -1,0 +1,213 @@
+/* YojanaSetu — "Gazette Ledger" (Swiss Minimalism / Editorial).
+   Paper-white, deep Himalayan green + ink navy, sparing saffron accent.
+   Serif display headlines, clean sans body, ruled lines, tabular numerals.
+   No glassmorphism, no gradients, no glow. System fonts only, no CDN. */
+:root {
+  --paper: #fdfdf8;
+  --card: #ffffff;
+  --ink: #14213d;
+  --ink-soft: #4a5568;
+  --green: #0f3d2e;
+  --green-deep: #0a2a1f;
+  --green-soft: #e6efe9;
+  --saffron: #c2410c;
+  --saffron-soft: #fdf0e3;
+  --line: #c9cdd3;
+  --line-strong: #14213d;
+  --red: #8b1e1e;
+  --red-soft: #fbe9e9;
+  --amber: #7a5200;
+  --amber-soft: #fdf3d7;
+  --blue: #1d4e89;
+  --blue-soft: #e8f0f8;
+}
+* { box-sizing: border-box; }
+/* scroll-behavior: auto (not smooth): a programmatic scroll-into-view
+   combined with smooth scrolling races the click that follows it — the
+   pointer lands where the target was before the scroll finishes, so a
+   below-fold map block could not be clicked reliably. Instant scrolling
+   removes that race; nothing in the design depends on smooth scrolling. */
+html { scroll-behavior: auto; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.num, td, .stat b { font-variant-numeric: tabular-nums; }
+a { color: var(--green); }
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid var(--saffron); outline-offset: 2px;
+}
+
+/* Masthead — ruled gazette header */
+.masthead { border-bottom: 3px double var(--line-strong); padding: 18px 0 12px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+.kicker { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-soft); }
+.masthead h1 {
+  font-family: Georgia, "Times New Roman", serif; font-size: 44px; line-height: 1.05;
+  margin: 6px 0 2px; color: var(--green-deep);
+}
+.masthead h1 em { font-style: normal; color: var(--saffron); }
+.sub { font-family: Georgia, serif; font-size: 18px; color: var(--ink-soft); margin: 0 0 8px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--ink-soft);
+  border-top: 1px solid var(--line); padding-top: 8px; }
+.meta-line b { color: var(--ink); }
+.synthetic-banner {
+  background: var(--saffron-soft); border: 1px solid var(--saffron);
+  border-left: 6px solid var(--saffron); padding: 10px 14px; margin: 14px 0 0;
+  font-size: 14px;
+}
+.synthetic-banner b { color: var(--saffron); }
+
+/* Nav — ruled tab bar */
+nav.tabs { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 2px solid var(--line-strong); margin-top: 16px; }
+nav.tabs button {
+  background: none; border: none; border-right: 1px solid var(--line);
+  padding: 11px 16px; font: 600 14px system-ui, sans-serif; color: var(--ink-soft);
+  cursor: pointer; letter-spacing: .02em;
+}
+nav.tabs button:hover { background: var(--green-soft); color: var(--ink); }
+nav.tabs button[aria-pressed="true"] { background: var(--green); color: #fff; }
+nav.tabs button:last-child { border-right: none; }
+
+main { padding: 24px 0 40px; }
+section.panel { display: none; }
+section.panel.active { display: block; }
+h2 {
+  font-family: Georgia, serif; font-size: 26px; color: var(--green-deep);
+  border-bottom: 1px solid var(--line-strong); padding-bottom: 6px; margin: 0 0 6px;
+}
+.lede { color: var(--ink-soft); margin: 0 0 18px; max-width: 72ch; }
+h3 { font-family: Georgia, serif; font-size: 19px; color: var(--green-deep); margin: 22px 0 8px; }
+
+/* Stat strip */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0 0 8px; }
+.stat { border: 1px solid var(--line); border-top: 4px solid var(--green); background: var(--card); padding: 12px 14px; }
+.stat b { display: block; font-family: Georgia, serif; font-size: 32px; line-height: 1.1; color: var(--green-deep); }
+.stat span { font-size: 13px; color: var(--ink-soft); }
+.stat.warn { border-top-color: var(--saffron); }
+.stat.warn b { color: var(--saffron); }
+
+/* Forms */
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin: 12px 0; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+input[type="search"], input[type="text"], select {
+  font: 15px system-ui, sans-serif; padding: 9px 10px; border: 1px solid var(--line-strong);
+  border-radius: 0; background: #fff; color: var(--ink); min-width: 220px;
+}
+button.btn {
+  font: 600 14px system-ui, sans-serif; padding: 10px 18px; cursor: pointer;
+  background: var(--green); color: #fff; border: 1px solid var(--green-deep); border-radius: 0;
+}
+button.btn:hover { background: var(--green-deep); }
+button.btn.secondary { background: #fff; color: var(--green); border-color: var(--green); }
+button.btn.secondary:hover { background: var(--green-soft); }
+button.btn:disabled { opacity: .5; cursor: not-allowed; }
+.hint { font-size: 13px; color: var(--ink-soft); }
+.error { background: var(--red-soft); border: 1px solid var(--red); color: var(--red); padding: 10px 12px; margin: 10px 0; }
+.empty { border: 1px dashed var(--line); padding: 16px; color: var(--ink-soft); margin: 10px 0; }
+
+/* Tables + ruled lists */
+table { width: 100%; border-collapse: collapse; background: var(--card); margin: 8px 0; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); font-size: 14px; }
+th { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft);
+  border-bottom: 2px solid var(--line-strong); }
+tbody tr:hover { background: var(--green-soft); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.card { border: 1px solid var(--line); border-top: 3px solid var(--green); background: var(--card); padding: 14px 16px; }
+.card h4 { font-family: Georgia, serif; font-size: 18px; margin: 0 0 4px; color: var(--green-deep); }
+.card p { margin: 4px 0; font-size: 14px; }
+.card .tag { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.card .src { font-size: 12px; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 6px; margin-top: 8px; }
+.rep { border-top-color: var(--saffron); }
+
+/* Verdict chips — word + colour, never colour-only */
+.chip { display: inline-block; font: 700 12px system-ui, sans-serif; letter-spacing: .06em;
+  padding: 3px 9px; border: 1px solid currentColor; text-transform: uppercase; }
+.chip.ok { color: var(--green); background: var(--green-soft); }
+.chip.no { color: var(--red); background: var(--red-soft); }
+.chip.warn { color: var(--amber); background: var(--amber-soft); }
+.chip.info { color: var(--blue); background: var(--blue-soft); }
+.chip.saffron { color: var(--saffron); background: var(--saffron-soft); }
+
+/* 3D district map — CSS-3D extruded blocks, height = enrolment volume.
+   The stage must be tall enough for the ROTATED .map-3d bounding box:
+   at 1280px the rotated content is ~361px tall, so the stage gets an
+   explicit min-height per breakpoint (Gate D F1: the old squeeze clipped
+   8 of 13 blocks). --map-rot is the drag / Alt+arrow rotation, ±20°. */
+.map-stage { perspective: 1100px; overflow: hidden; border: 1px solid var(--line);
+  background: var(--card); padding: 26px 10px 8px; margin: 8px 0; min-height: 450px;
+  display: flex; align-items: center; justify-content: center; }
+.map-3d { display: flex; flex-wrap: wrap; gap: 14px 10px; justify-content: center;
+  max-width: 100%; margin: 0 auto;
+  /* scale(0.96): the perspective projection shifts the rotated grid's
+     visual box ~36px left of its layout box; the shrink pulls the end
+     blocks (Almora) back inside the plate at every desktop width. */
+  transform: rotateX(52deg) rotateZ(calc(-32deg + var(--map-rot, 0deg))) scale(0.96); transform-style: preserve-3d; }
+.district-block { position: relative; width: 118px; min-height: 44px; transform-style: preserve-3d;
+  cursor: pointer; border: 1px solid var(--green-deep); background: var(--green-soft);
+  transition: transform .18s ease, background .18s ease; }
+.district-block .face { display: block; padding: 6px 8px; font-size: 12px; font-weight: 700; color: var(--green-deep); }
+.district-block .count { display: block; font-family: Georgia, serif; font-size: 20px; }
+.district-block::after { /* extruded side = height from enrolment volume */
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: var(--extrude, 8px);
+  background: var(--green); transform-origin: top; transform: rotateX(-90deg); opacity: .85;
+}
+.district-block:hover, .district-block:focus-visible { background: var(--saffron-soft); border-color: var(--saffron); }
+.district-block[aria-pressed="true"] { background: var(--saffron); border-color: var(--saffron); }
+.district-block[aria-pressed="true"] .face, .district-block[aria-pressed="true"] .count { color: #fff; }
+.map-note { font-size: 13px; color: var(--ink-soft); margin: 6px 0 0; }
+.map-2d { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; list-style: none; padding: 0; }
+.map-2d button { font: 600 13px system-ui, sans-serif; padding: 7px 12px; cursor: pointer;
+  background: #fff; border: 1px solid var(--green); color: var(--green); }
+.map-2d button[aria-pressed="true"] { background: var(--green); color: #fff; }
+.map-2d button:hover { background: var(--green-soft); }
+
+/* Tables that can outgrow a phone screen scroll inside their own
+   container instead of breaking the page (Gate D F3/F4). */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0; }
+.table-scroll table { width: max-content; min-width: 100%; margin: 0; }
+
+/* Masthead tools: officer's desk label + low-motion toggle (constitution §10). */
+.masthead-tools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+  justify-content: space-between; margin-top: 12px; }
+.desk-label { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* Flat map: the 3D stage hides and the 2D district list becomes the grid. */
+body.flat-map .map-stage { display: none; }
+body.flat-map .map-2d { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+body.flat-map .map-2d button { width: 100%; text-align: left; }
+
+/* Low motion (manual toggle, persisted in localStorage) — same effect as
+   the OS prefers-reduced-motion query, plus the map defaults to flat. */
+body.low-motion { scroll-behavior: auto; }
+body.low-motion *, body.low-motion *::before, body.low-motion *::after {
+  transition: none !important; animation: none !important; }
+body.low-motion .map-3d { transform: none; }
+body.low-motion .district-block::after { display: none; }
+body.low-motion .map-stage { display: none; }
+.detail { border: 1px solid var(--line-strong); background: var(--card); padding: 16px 18px; margin: 12px 0; }
+.detail h3 { margin-top: 0; }
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 6px 18px; font-size: 14px; margin: 8px 0; }
+.kv b { color: var(--ink-soft); font-weight: 600; }
+.evidence { font-size: 13px; margin: 4px 0; }
+.evidence li { margin: 3px 0; }
+footer { border-top: 3px double var(--line-strong); padding: 16px 0 28px; font-size: 13px; color: var(--ink-soft); }
+footer p { margin: 4px 0; }
+
+@media (max-width: 720px) {
+  .masthead h1 { font-size: 32px; }
+  .map-stage { min-height: 340px; }
+  /* Shrink the rotated scene so its bounding box fits a ~350px stage:
+     unscaled, rotateZ(-28deg) spreads the 5-row grid to ~461px wide. */
+  .map-3d { transform: rotateX(45deg) rotateZ(calc(-28deg + var(--map-rot, 0deg))) scale(0.72); }
+  .district-block { width: 96px; }
+  input[type="search"], input[type="text"], select { min-width: 0; width: 100%; }
+  .controls { flex-direction: column; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .map-3d { transform: none; }
+  .district-block::after { display: none; }
+}

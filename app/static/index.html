@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YojanaSetu — Integrated Beneficiary Data Governance · UKIS 2026</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230f3d2e'/%3E%3Ctext x='8' y='12' font-size='11' text-anchor='middle' fill='%23fdfdf8' font-family='Georgia,serif'%3EY%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="masthead"><div class="wrap">
+  <div class="kicker">UKIS 2026 · Data Governance &amp; Welfare · Uttarakhand</div>
+  <h1>Yojana<em>Setu</em></h1>
+  <p class="sub">One holistic view of scheme participation — across departments, with every record cited.</p>
+  <div class="meta-line">
+    <span>Problem: <b>AI-Driven Integrated Beneficiary Data Governance</b></span>
+    <span>Stage 1: <b>Online</b></span>
+    <span>Districts: <b class="num">13</b></span>
+    <span>Prize pool: <b>₹1,03,000+</b></span>
+  </div>
+  <div class="masthead-tools">
+    <span class="desk-label">Officer's desk — Demo</span>
+    <button type="button" class="btn secondary" id="btn-low-motion" aria-pressed="false">Low motion: Off</button>
+  </div>
+  <p class="synthetic-banner"><b>SYNTHETIC DEMO DATA — no real citizen data.</b>
+  Every person, ID and enrolment on this page is fictional and invented for the demo.
+  Nothing here is a real citizen record. Do not use it for any real eligibility decision.</p>
+  <nav class="tabs" aria-label="Sections">
+    <button type="button" data-panel="dashboard" aria-pressed="true">Officer Dashboard</button>
+    <button type="button" data-panel="lookup" aria-pressed="false">Beneficiary Lookup</button>
+    <button type="button" data-panel="duplicates" aria-pressed="false">Duplicate Detection</button>
+    <button type="button" data-panel="trace" aria-pressed="false">Eligibility Trace</button>
+    <button type="button" data-panel="registry" aria-pressed="false">Scheme Registry</button>
+  </nav>
+</div></header>
+
+<main><div class="wrap">
+
+  <!-- ============ DASHBOARD ============ -->
+  <section class="panel active" id="panel-dashboard" aria-label="Officer dashboard">
+    <h2>Officer Dashboard</h2>
+    <p class="lede">Totals across all (synthetic) departmental registers, enrolment by district and
+    scheme, duplicate flags, and the inclusion gap — people eligible for a scheme they are not enrolled in.</p>
+    <div id="dash-error" role="alert"></div>
+    <div class="stats" id="dash-stats" aria-live="polite"></div>
+
+    <h3>District map — enrolment volume as height</h3>
+    <p class="hint">Click a block (or Tab to it, then Enter) to filter the whole dashboard
+    to that district. Block height = enrolment volume in that district. Drag the map
+    with the mouse, or press Alt+← / Alt+→, to rotate the scene ±20°; plain ←/→ move
+    focus between blocks. “Reset view” restores the default angle; “Flat map” switches
+    to the 2D district list below. Rotation is off on touch screens, so a scroll
+    gesture is never hijacked. A plain 2D list follows for screen readers and
+    reduced-motion users.</p>
+    <div class="map-stage"><div class="map-3d" id="map-3d" role="group" aria-label="3D district map of Uttarakhand"></div></div>
+    <p class="map-note" id="map-filter-note">Showing: <b>all 13 districts</b>.</p>
+    <div class="controls map-controls">
+      <button type="button" class="btn secondary" id="btn-flat-map" aria-pressed="false">Flat map: Off</button>
+      <button type="button" class="btn secondary" id="btn-reset-view">Reset view</button>
+    </div>
+    <ul class="map-2d" id="map-2d" aria-label="Districts as a list"></ul>
+    <div class="controls">
+      <button type="button" class="btn secondary" id="btn-clear-district">Clear district filter</button>
+      <button type="button" class="btn secondary" id="btn-export-gaps">Download inclusion gaps (CSV)</button>
+    </div>
+
+    <h3>Enrolments by scheme</h3>
+    <div id="dash-by-scheme"></div>
+    <h3>Inclusion gaps — eligible but not enrolled</h3>
+    <div id="dash-gaps"></div>
+  </section>
+
+  <!-- ============ LOOKUP ============ -->
+  <section class="panel" id="panel-lookup" aria-label="Beneficiary lookup">
+    <h2>Beneficiary Lookup</h2>
+    <p class="lede">Search by synthetic ID (e.g. <b>YS-1001</b>), name (e.g. <b>Gita Devi</b>) or district
+    (e.g. <b>Dehradun</b>). One holistic view shows every scheme enrolment for that person, each with its
+    source department and record ID.</p>
+    <form id="lookup-form" class="controls">
+      <label class="field">Search synthetic records
+        <input type="search" id="lookup-q" placeholder="YS-1001, Gita Devi, Dehradun…" autocomplete="off">
+      </label>
+      <button type="submit" class="btn">Search</button>
+      <button type="button" class="btn secondary" id="btn-lookup-clear">Clear</button>
+    </form>
+    <p class="hint">Try: <b>YS-1001</b> · <b>Ramesh Singh</b> · <b>Nainital</b> — the seeded duplicate and near-miss pairs.</p>
+    <div id="lookup-error" role="alert"></div>
+    <div id="lookup-results" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ DUPLICATES ============ -->
+  <section class="panel" id="panel-duplicates" aria-label="Duplicate detection">
+    <h2>Duplicate Detection</h2>
+    <p class="lede">Deterministic matching on name + date of birth + district + family reference.
+    Every flag shows its evidence — which records match, on which fields, with a confidence score —
+    and a suggested action. Nothing is auto-merged.</p>
+    <div class="controls">
+      <label class="field">Show
+        <select id="dup-filter">
+          <option value="all">All flagged pairs</option>
+          <option value="DUPLICATE">DUPLICATE only</option>
+          <option value="LIKELY DUPLICATE">LIKELY DUPLICATE only</option>
+          <option value="REVIEW">REVIEW only</option>
+        </select>
+      </label>
+      <button type="button" class="btn secondary" id="btn-dup-refresh">Refresh list</button>
+    </div>
+    <div id="dup-error" role="alert"></div>
+    <div id="dup-results" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ TRACE ============ -->
+  <section class="panel" id="panel-trace" aria-label="Eligibility trace">
+    <h2>Eligibility Trace</h2>
+    <p class="lede">Pick a person and a scheme. Every rule is shown PASS / FAIL / UNKNOWN with the
+    source record it was read from, and a final verdict: ELIGIBLE, NOT ELIGIBLE, or NEEDS REVIEW.</p>
+    <form id="trace-form" class="controls">
+      <label class="field">Person
+        <select id="trace-person"></select>
+      </label>
+      <label class="field">Scheme
+        <select id="trace-scheme"></select>
+      </label>
+      <button type="submit" class="btn">Run trace</button>
+      <button type="button" class="btn secondary" id="btn-trace-clear">Clear result</button>
+    </form>
+    <div id="trace-error" role="alert"></div>
+    <div id="trace-result" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ REGISTRY ============ -->
+  <section class="panel" id="panel-registry" aria-label="Scheme registry">
+    <h2>Scheme Registry</h2>
+    <p class="lede">Nine schemes in the governance layer. Eight are real national schemes (headline
+    criteria snapshot, Nov 2026 — verify at myscheme.gov.in); one is clearly labelled REPRESENTATIVE.</p>
+    <form id="registry-form" class="controls">
+      <label class="field">Search schemes
+        <input type="search" id="registry-q" placeholder="PM-KISAN, Health, Housing…" autocomplete="off">
+      </label>
+      <button type="submit" class="btn">Search</button>
+      <label class="field">Category
+        <select id="registry-category">
+          <option value="">All categories</option>
+        </select>
+      </label>
+      <button type="button" class="btn secondary" id="btn-registry-clear">Clear</button>
+    </form>
+    <div id="registry-error" role="alert"></div>
+    <div id="registry-results" class="cards" aria-live="polite"></div>
+  </section>
+
+</div></main>
+
+<footer><div class="wrap">
+  <p><b>YojanaSetu</b> — UKIS 2026 entry. SYNTHETIC DEMO DATA — no real citizen data.
+  Scheme figures are a headline-criteria snapshot (Nov 2026); verify current criteria at
+  <a href="https://www.myscheme.gov.in">myscheme.gov.in</a> before any real decision.</p>
+  <p>Problem (official, axocom.in/UKISHackathon): “Data Governance &amp; Welfare — AI-Driven Integrated
+  Beneficiary Data Governance: Create a privacy-conscious data intelligence platform that connects
+  beneficiary records across departments to provide a holistic view of scheme participation while
+  improving inclusion, integrity and policy planning.”</p>
+  <p>Built with Python stdlib only. No accounts, no tracking, no data leaves this machine.</p>
+</div></footer>
+<script src="/static/app.js"></script>
+</body>
+</html>

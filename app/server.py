@@ -14,6 +14,9 @@ Routes:
   GET  /api/duplicates       duplicate pairs with evidence + confidence
   GET  /api/trace?person=&scheme=  rule-by-rule eligibility trace
   GET  /api/dashboard?district=    officer dashboard (+ inclusion gaps)
+  GET  /api/review-queue     flagged pairs + latest officer decision each
+  POST /api/review-decisions record a decision {"pair_id", "decision", "note"}
+  GET  /api/audit-trail      officer decisions, newest first (in-memory)
 
 All data is SYNTHETIC. No secrets, no env vars, no external assets.
 """
@@ -29,6 +32,7 @@ from app.data import BENEFICIARIES, DISTRICTS, PERSON_BY_ID, SCHEMES, SCHEME_BY_
 from app.governance import (dashboard, find_duplicates, public_person,
                             search_beneficiaries, search_schemes,
                             trace_eligibility)
+from app.reviews import audit_trail, record_decision, review_queue
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
@@ -132,10 +136,52 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"ok": True, "dashboard": dashboard(district),
                             "districts": DISTRICTS})
                 return
+            if path == "/api/review-queue":
+                queue = review_queue()
+                self._json({"ok": True, "queue": queue, "total": len(queue)})
+                return
+            if path == "/api/audit-trail":
+                entries = audit_trail()
+                self._json({"ok": True, "entries": entries, "total": len(entries)})
+                return
         except Exception as exc:  # never leak a stack trace to the client
             self._json({"ok": False, "error": f"Server error: {exc}"}, 500)
             return
         self._json({"ok": False, "error": "Not found."}, 404)
+
+    def do_POST(self):
+        parsed = urllib.parse.urlparse(self.path)
+        if parsed.path != "/api/review-decisions":
+            self._json({"ok": False, "error": "Not found."}, 404)
+            return
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(length) if length > 0 else b""
+            try:
+                body = json.loads(raw.decode("utf-8")) if raw else {}
+            except (ValueError, UnicodeDecodeError):
+                self._json({"ok": False,
+                            "error": "Request body must be valid JSON."}, 400)
+                return
+            pid = body.get("pair_id") or ""
+            decision = body.get("decision") or ""
+            if not pid or not decision:
+                self._json({"ok": False,
+                            "error": "pair_id and decision are required."}, 400)
+                return
+            try:
+                entry = record_decision(pid, decision, body.get("note") or "")
+            except ValueError as exc:
+                self._json({"ok": False, "error": str(exc)}, 400)
+                return
+            if entry is None:
+                self._json({"ok": False,
+                            "error": f"No flagged duplicate pair with ID {pid}."}, 404)
+                return
+            self._json({"ok": True, "entry": entry})
+        except Exception as exc:  # never leak a stack trace to the client
+            self._json({"ok": False, "error": f"Server error: {exc}"}, 500)
+            return
 
 
 def main(host: str = HOST, port: int = PORT) -> None:

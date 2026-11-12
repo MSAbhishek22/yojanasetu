@@ -5,13 +5,16 @@ same duplicate matching, same eligibility trace, same dashboard, same
 synthetic data); this file is only a transport adapter. Vercel's Python
 runtime calls ``app(environ, start_response)``.
 
-Why this adapter is simpler than NyayaSeal's: YojanaSetu is fully
-read-only. Every route is a GET; the app never writes to disk (the only
-``open()`` calls in app/server.py read static files). All data is
-compiled into app/data.py. There is no per-instance store to go stale,
-so the serverless behaviour is IDENTICAL to local — no /tmp store is
-needed and no "warm instance" caveat applies. The only difference from
-local: no server process — each request is handled by this WSGI app.
+Why this adapter is simpler than NyayaSeal's: the reference data is
+compiled into app/data.py and the app never writes to disk (the only
+``open()`` calls read static files). The one piece of mutable state is
+the officer review-decision store (app/reviews.py): a module-level
+in-memory list, identical code to local. On serverless it lives only
+for the life of the warm instance — decisions can differ across
+instances and vanish on a cold start. That is an accepted demo caveat
+(synthetic data, no real cases); locally the behaviour is identical to
+app/server.py. The only other difference: no server process — each
+request is handled by this WSGI app.
 
 Route-for-route parity with app/server.py (same paths, same JSON
 shapes, same status codes, same error strings). No credentials, no
@@ -33,6 +36,7 @@ from app.governance import (  # noqa: E402
     dashboard, find_duplicates, public_person, search_beneficiaries,
     search_schemes, trace_eligibility,
 )
+from app.reviews import audit_trail, record_decision, review_queue  # noqa: E402
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_DIR = os.path.join(BASE_DIR, "app", "static")
@@ -118,8 +122,42 @@ def handle_get(path: str, query: dict):
         return 200, "application/json", _json_body(
             {"ok": True, "dashboard": dashboard(district),
              "districts": DISTRICTS})
+    if path == "/api/review-queue":
+        queue = review_queue()
+        return 200, "application/json", _json_body(
+            {"ok": True, "queue": queue, "total": len(queue)})
+    if path == "/api/audit-trail":
+        entries = audit_trail()
+        return 200, "application/json", _json_body(
+            {"ok": True, "entries": entries, "total": len(entries)})
     return 404, "application/json", _json_body(
         {"ok": False, "error": "Not found."})
+
+
+def handle_post(path: str, raw: bytes):
+    if path != "/api/review-decisions":
+        return 404, "application/json", _json_body(
+            {"ok": False, "error": "Not found."})
+    try:
+        body = json.loads(raw.decode("utf-8")) if raw else {}
+    except (ValueError, UnicodeDecodeError):
+        return 400, "application/json", _json_body(
+            {"ok": False, "error": "Request body must be valid JSON."})
+    pid = body.get("pair_id") or ""
+    decision = body.get("decision") or ""
+    if not pid or not decision:
+        return 400, "application/json", _json_body(
+            {"ok": False, "error": "pair_id and decision are required."})
+    try:
+        entry = record_decision(pid, decision, body.get("note") or "")
+    except ValueError as exc:
+        return 400, "application/json", _json_body(
+            {"ok": False, "error": str(exc)})
+    if entry is None:
+        return 404, "application/json", _json_body(
+            {"ok": False,
+             "error": f"No flagged duplicate pair with ID {pid}."})
+    return 200, "application/json", _json_body({"ok": True, "entry": entry})
 
 
 _STATUSES = {
@@ -137,6 +175,13 @@ def app(environ, start_response):
     try:
         if method == "GET":
             code, ctype, body = handle_get(path, query)
+        elif method == "POST":
+            try:
+                length = int(environ.get("CONTENT_LENGTH") or 0)
+            except ValueError:
+                length = 0
+            raw = environ["wsgi.input"].read(length) if length > 0 else b""
+            code, ctype, body = handle_post(path, raw)
         else:
             code, ctype, body = 404, "application/json", _json_body(
                 {"ok": False, "error": "Not found."})

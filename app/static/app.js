@@ -377,6 +377,90 @@ async function loadDuplicates() {
 $("dup-filter").addEventListener("change", loadDuplicates);
 $("btn-dup-refresh").addEventListener("click", loadDuplicates);
 
+/* ---- Duplicate review queue + audit trail ---- */
+async function apiPost(path, payload) {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ("Request failed: " + res.status));
+  return data;
+}
+function decisionChip(d) {
+  return d.decision === "confirmed_duplicate"
+    ? '<span class="chip no">Confirmed duplicate</span>'
+    : '<span class="chip ok">Not a duplicate</span>';
+}
+async function loadReviewQueue() {
+  const errEl = $("review-error"), out = $("review-results");
+  clearError(errEl);
+  out.innerHTML = "<p>Loading the review queue…</p>";
+  try {
+    const { queue } = await api("/api/review-queue");
+    out.innerHTML = queue.length
+      ? "<p>" + queue.length + " flagged pair(s) in the queue.</p>" +
+        queue.map((p) => {
+          const d = p.decision;
+          const state = d
+            ? "<p><b>Officer decision:</b> " + decisionChip(d) +
+              (d.note ? " — “" + esc(d.note) + "”" : "") +
+              ' <span class="hint">' + esc(d.decided_at) + " UTC</span></p>"
+            : '<p><b>Officer decision:</b> <span class="chip warn">Awaiting decision</span></p>';
+          return '<article class="card"><h4>' + esc(p.name_a) + " ↔ " + esc(p.name_b) + "</h4>" +
+            "<p>" + chipFor(p.verdict) + ' <b class="num">Confidence ' + p.confidence.toFixed(2) + "</b></p>" +
+            "<p class='hint'>" + esc(p.person_a) + " · " + esc(p.person_b) +
+            " · Pair " + esc(p.pair_id) + "</p>" +
+            '<ul class="evidence">' + p.evidence.map((e) => "<li>" + (e.match ? "✓ " : "✗ ") +
+              "<b>" + esc(e.field) + ":</b> " + esc(e.detail) + "</li>").join("") + "</ul>" +
+            state +
+            '<form class="controls review-form" data-pair-id="' + esc(p.pair_id) + '">' +
+            '<label class="field">Decision' +
+            '<select name="decision">' +
+            '<option value="confirmed_duplicate">Confirmed duplicate</option>' +
+            '<option value="not_a_duplicate">Not a duplicate</option>' +
+            "</select></label>" +
+            '<label class="field">Note (optional)' +
+            '<input type="text" name="note" maxlength="200" placeholder="e.g. Verified at camp, same person">' +
+            "</label>" +
+            '<button type="submit" class="btn">Record decision</button>' +
+            "</form></article>";
+        }).join("")
+      : '<p class="empty">No flagged pairs in the synthetic data.</p>';
+    out.className = "cards";
+    out.querySelectorAll(".review-form").forEach((form) => {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        clearError(errEl);
+        try {
+          await apiPost("/api/review-decisions", {
+            pair_id: form.dataset.pairId,
+            decision: form.elements.decision.value,
+            note: form.elements.note.value.trim(),
+          });
+          loadReviewQueue();
+          loadAuditTrail();
+        } catch (err) { showError(errEl, err); }
+      });
+    });
+  } catch (err) { out.innerHTML = ""; showError(errEl, err); }
+}
+async function loadAuditTrail() {
+  const out = $("audit-results");
+  try {
+    const { entries } = await api("/api/audit-trail");
+    out.innerHTML = entries.length
+      ? '<div class="table-scroll"><table><thead><tr><th>Decided at (UTC)</th><th>Pair</th><th>Decision</th><th>Note</th></tr></thead><tbody>' +
+        entries.map((e) => "<tr><td class='num'>" + esc(e.decided_at) + "</td><td>" +
+          esc(e.name_a) + " ↔ " + esc(e.name_b) + " <span class='hint'>" + esc(e.pair_id) + "</span></td><td>" +
+          decisionChip(e) + "</td><td>" + esc(e.note || "—") + "</td></tr>").join("") +
+        "</tbody></table></div>"
+      : '<p class="empty">No officer decisions recorded yet in this demo session.</p>';
+  } catch (err) { showError($("review-error"), err); }
+}
+$("btn-review-refresh").addEventListener("click", () => { loadReviewQueue(); loadAuditTrail(); });
+
 /* ---- Eligibility trace ---- */
 async function loadTraceOptions() {
   try {
@@ -459,6 +543,8 @@ $("btn-registry-clear").addEventListener("click", () => {
   applyMapView();
   loadDashboard();
   loadDuplicates();
+  loadReviewQueue();
+  loadAuditTrail();
   loadTraceOptions();
   loadRegistry("");
 })();

@@ -62,6 +62,24 @@ Python 3 stdlib only — no pip installs, no CDN, no external assets, no secrets
 6. **3D district map** — CSS-3D extruded blocks for all 13 Uttarakhand districts, height =
    enrolment volume. Click / Enter / arrow keys filter the dashboard; a 2D button list is the
    fallback; reduced-motion flattens the map; all blocks are keyboard-focusable.
+7. **Duplicate review queue** — see "What's new" below.
+
+## What's new — 12 Nov 2026
+
+**Duplicate Review Queue with officer decisions + audit trail** (built 12 Nov 2026, during the
+LaunchPad Hacks window; everything above predates it). Duplicate *detection* is unchanged —
+the engine still only flags and suggests. What is new is the human step after the flag:
+
+- A **Review Queue** tab lists every flagged pair (rebuilt live from the same
+  `find_duplicates()` engine — no second copy of the logic), each with its evidence,
+  confidence, and current decision state.
+- For each pair an officer records **Confirmed duplicate** or **Not a duplicate**, with an
+  optional note (`POST /api/review-decisions`). Anything else is rejected with a 400;
+  an unknown pair ID gets a 404.
+- An **audit trail** (`GET /api/audit-trail`) lists every decision newest-first with
+  timestamp, pair, decision, and note.
+- Decisions live in server memory only (`app/reviews.py`) — the demo's standing pattern:
+  no database, no disk writes, a restart clears them, and nothing is ever auto-merged.
 
 ## Design
 
@@ -70,17 +88,21 @@ agent in parallel). Paper-white, deep Himalayan green + ink navy, sparing saffro
 display headlines + clean sans body; ruled lines, tabular numerals. No glassmorphism, no
 Neo-Brutalism, no cream/vermilion stamp aesthetic.
 
-## Tests (real, run 10 Nov 2026)
+## Tests (real, re-run 12 Nov 2026)
 
 ```bash
 python3 -m unittest discover -s tests -v
-# 37 tests, all PASS (0.58s) — see tests/test_governance.py + tests/test_server.py
+# 45 tests, all PASS — tests/test_governance.py + tests/test_server.py + tests/test_reviews.py
 ```
 
 Covers: duplicate matching (exact / near-miss / same-name-different-DOB / no-match),
-eligibility trace rules, registry + beneficiary search, dashboard totals and gaps, and server
-smoke (every route returns 200 with the expected JSON shape; 404/400 error paths included).
-Live smoke verified with `curl` against `python3 run.py` on port 8771 on 10 Nov 2026.
+eligibility trace rules, registry + beneficiary search, dashboard totals and gaps, server
+smoke (every route returns 200 with the expected JSON shape; 404/400 error paths included),
+and the review queue (queue listing, both officer decisions, audit-trail ordering, invalid
+decision → 400, unknown pair → 404, malformed JSON → 400).
+Live smoke verified with `curl` against `python3 run.py` on port 8771 on 12 Nov 2026,
+including a real POST decision round-trip; the Vercel WSGI adapter (api/index.py) was
+exercised in-process for the same routes.
 
 ## Honest status
 

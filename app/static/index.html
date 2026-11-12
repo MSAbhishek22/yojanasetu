@@ -29,6 +29,7 @@
     <button type="button" data-panel="dashboard" aria-pressed="true">Officer Dashboard</button>
     <button type="button" data-panel="lookup" aria-pressed="false">Beneficiary Lookup</button>
     <button type="button" data-panel="duplicates" aria-pressed="false">Duplicate Detection</button>
+    <button type="button" data-panel="review" aria-pressed="false">Review Queue</button>
     <button type="button" data-panel="trace" aria-pressed="false">Eligibility Trace</button>
     <button type="button" data-panel="registry" aria-pressed="false">Scheme Registry</button>
   </nav>
@@ -107,6 +108,23 @@
     </div>
     <div id="dup-error" role="alert"></div>
     <div id="dup-results" aria-live="polite"></div>
+  </section>
+
+  <!-- ============ REVIEW QUEUE ============ -->
+  <section class="panel" id="panel-review" aria-label="Duplicate review queue">
+    <h2>Duplicate Review Queue</h2>
+    <p class="lede">Every flagged duplicate pair, waiting for a human decision. The detecting
+    engine only suggests — an officer decides: <b>Confirmed duplicate</b> or
+    <b>Not a duplicate</b>, with an optional note. Each decision is written to the audit
+    trail below. Decisions are held in server memory for this demo session only and are
+    never auto-merged into any register.</p>
+    <div class="controls">
+      <button type="button" class="btn secondary" id="btn-review-refresh">Refresh queue</button>
+    </div>
+    <div id="review-error" role="alert"></div>
+    <div id="review-results" aria-live="polite"></div>
+    <h3>Audit trail — officer decisions (newest first)</h3>
+    <div id="audit-results" aria-live="polite"></div>
   </section>
 
   <!-- ============ TRACE ============ -->

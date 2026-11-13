@@ -1,6 +1,9 @@
 # YojanaSetu — AI-Driven Integrated Beneficiary Data Governance
 
 **UKIS 2026 entry** · Problem: Data Governance & Welfare
+Also submitted to **GenHacks** and **LaunchPad Hacks** (both 12 Nov 2026).
+Live: **https://yojanasetu-self.vercel.app** · Repo: https://github.com/MSAbhishek22/yojanasetu ·
+Demo video: https://www.youtube.com/watch?v=rpBsXXCNvmg
 
 > Official problem (verified 10 Nov 2026 from https://www.axocom.in/UKISHackathon):
 > "Data Governance & Welfare — AI-Driven Integrated Beneficiary Data Governance: Create a
@@ -108,9 +111,12 @@ exercised in-process for the same routes.
 
 - Gates A–D: built and tested locally (see `RELEASE_CARD.md`). Design constitution is being
   written by the design agent in parallel — not yet in this folder.
-- Gates E–G **BLOCKED** (by task scope, not by a failure): no GitHub repo, no deployment, no
-  demo video, no UKIS registration/submission. See `RELEASE_CARD.md` and
-  `deployment/DEPLOYMENT_RUNBOOK.md` (skeleton with nulls — no live URL is claimed).
+- Since then: public GitHub repo (MSAbhishek22/yojanasetu), deployed and verified live at
+  https://yojanasetu-self.vercel.app, demo video recorded from the live site
+  (https://www.youtube.com/watch?v=rpBsXXCNvmg), and submissions filed to LaunchPad Hacks
+  and GenHacks on 12 Nov 2026. The **UKIS submission itself is still pending** — the UKIS
+  team dashboard has been unavailable (backend down) on repeated attempts; UKIS deadline
+  is 14 Dec 2026.
 - Known limitations: in-browser click-through was not possible from this build agent (no live
   browser here) — API + unit verification is done; a live-browser pass is still needed before
   any demo recording. The 3D map is CSS-3D (no WebGL) by design; mobile viewport check is

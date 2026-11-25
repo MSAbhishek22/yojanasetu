@@ -6,12 +6,22 @@
 <title>YojanaSetu — Integrated Beneficiary Data Governance · UKIS 2026</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230f3d2e'/%3E%3Ctext x='8' y='12' font-size='11' text-anchor='middle' fill='%23fdfdf8' font-family='Georgia,serif'%3EY%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="/static/style.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script type="module" src="/static/hero3d.js"></script>
 </head>
 <body>
 <header class="masthead"><div class="wrap">
   <div class="kicker">UKIS 2026 · Data Governance &amp; Welfare · Uttarakhand</div>
   <h1>Yojana<em>Setu</em></h1>
   <p class="sub">One holistic view of scheme participation — across departments, with every record cited.</p>
+  <!-- First-load 3D signature (J8): real Three.js district skyline from
+       the live dashboard register, drawn on load with no click. -->
+  <div class="hero3d" id="hero3d">
+    <canvas id="hero3d-canvas" width="640" height="280" role="img" aria-label="3D district skyline. One bar per district, bar height is enrolment volume. Drag to rotate, click a bar to filter the dashboard to that district."></canvas>
+    <p class="hero3d-fallback" id="hero3d-fallback" hidden>District enrolments as a 3D skyline — see the Officer Dashboard below.</p>
+    <p class="hint" id="hero3d-caption">Loading the district skyline…</p>
+    <p class="scroll-cue"><a href="#panel-dashboard">Scroll ↓ — officer dashboard, lookup, duplicates and eligibility trace</a></p>
+  </div>
   <div class="meta-line">
     <span>Problem: <b>AI-Driven Integrated Beneficiary Data Governance</b></span>
     <span>Stage 1: <b>Online</b></span>
